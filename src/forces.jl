@@ -63,11 +63,7 @@ function accelerations(s::Simulation; parallel::Bool=true)
                 neighbors = s.neighbors
                 @threads for ni in 1:length(neighbors)
                     i, j, w = neighbors[ni]
-                    if isone(w)
-                        force!(forces_threads[threadid()], inter, s, i, j)
-                    else
-                        force!(forces_threads[threadid()], inter, s, i, j, w)
-                    end
+                    force!(forces_threads[threadid()], inter, s, i, j, w)
                 end
             else
                 @threads for i in 1:n_atoms
@@ -87,11 +83,7 @@ function accelerations(s::Simulation; parallel::Bool=true)
                 neighbors = s.neighbors
                 for ni in 1:length(neighbors)
                     i, j, w = neighbors[ni]
-                    if isone(w)
-                        force!(forces, inter, s, i, j)
-                    else
-                        force!(forces, inter, s, i, j, w)
-                    end
+                    force!(forces, inter, s, i, j, w)
                 end
             else
                 for i in 1:n_atoms
