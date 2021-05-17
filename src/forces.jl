@@ -38,6 +38,13 @@ end
     return nothing
 end
 
+@inline @inbounds function force!(forces, inter, s::Simulation, i::Integer, j::Integer, w)
+    fdr = force(inter, s.coords[i], s.coords[j], s.atoms[i], s.atoms[j], s.box_size) * w
+    forces[i] -= fdr
+    forces[j] += fdr
+    return nothing
+end
+
 """
     accelerations(simulation; parallel=true)
 
@@ -55,8 +62,12 @@ function accelerations(s::Simulation; parallel::Bool=true)
             if inter.nl_only
                 neighbors = s.neighbors
                 @threads for ni in 1:length(neighbors)
-                    i, j = neighbors[ni]
-                    force!(forces_threads[threadid()], inter, s, i, j)
+                    i, j, w = neighbors[ni]
+                    if isone(w)
+                        force!(forces_threads[threadid()], inter, s, i, j)
+                    else
+                        force!(forces_threads[threadid()], inter, s, i, j, w)
+                    end
                 end
             else
                 @threads for i in 1:n_atoms
@@ -75,8 +86,12 @@ function accelerations(s::Simulation; parallel::Bool=true)
             if inter.nl_only
                 neighbors = s.neighbors
                 for ni in 1:length(neighbors)
-                    i, j = neighbors[ni]
-                    force!(forces, inter, s, i, j)
+                    i, j, w = neighbors[ni]
+                    if isone(w)
+                        force!(forces, inter, s, i, j)
+                    else
+                        force!(forces, inter, s, i, j, w)
+                    end
                 end
             else
                 for i in 1:n_atoms

@@ -193,7 +193,7 @@ struct Simulation{D, T, A, C, GI, SI}
     velocities::C
     temperature::T
     box_size::T
-    neighbors::Vector{Tuple{Int, Int}}
+    neighbors::Vector{Tuple{Int, Int, T}}
     neighbor_finder::NeighborFinder
     thermostat::Thermostat
     loggers::Dict{String, <:Logger}
@@ -213,7 +213,6 @@ function Simulation(;
                     velocities=zero(coords),
                     temperature=0.0,
                     box_size,
-                    neighbors=Tuple{Int, Int}[],
                     neighbor_finder=NoNeighborFinder(),
                     thermostat=NoThermostat(),
                     loggers=Dict{String, Logger}(),
@@ -226,6 +225,7 @@ function Simulation(;
     C = typeof(coords)
     GI = typeof(general_inters)
     SI = typeof(specific_inter_lists)
+    neighbors = Tuple{Int, Int, T}[]
     return Simulation{gpu_diff_safe, T, A, C, GI, SI}(
                 simulator, atoms, specific_inter_lists, general_inters, coords,
                 velocities, temperature, box_size, neighbors, neighbor_finder,
